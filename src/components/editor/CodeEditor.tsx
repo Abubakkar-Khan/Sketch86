@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import Editor, { type OnMount } from "@monaco-editor/react";
 import type * as monaco from "monaco-editor";
 import type { Diagnostic, Instruction } from "../../engine";
@@ -6,17 +7,64 @@ type CodeEditorProps = {
   source: string;
   diagnostics: Diagnostic[];
   currentInstruction: Instruction | null;
+  executedLineNumber?: number;
   onChange: (source: string) => void;
   theme: "light" | "dark";
 };
 
-export function CodeEditor({ source, diagnostics, currentInstruction, onChange, theme }: CodeEditorProps) {
+export function CodeEditor({ source, diagnostics, currentInstruction, executedLineNumber, onChange, theme }: CodeEditorProps) {
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<typeof monaco | null>(null);
+  const decorationsRef = useRef<string[]>([]);
+
   const handleMount: OnMount = (editor, monacoApi) => {
+    editorRef.current = editor;
+    monacoRef.current = monacoApi;
     defineThemes(monacoApi);
     monacoApi.editor.setTheme(theme === "dark" ? "sketch86-dark" : "sketch86-light");
     const model = editor.getModel();
     if (model) applyMarkers(monacoApi, model, diagnostics);
   };
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    const monacoApi = monacoRef.current;
+    const model = editor?.getModel();
+    if (!editor || !monacoApi || !model) return;
+    applyMarkers(monacoApi, model, diagnostics);
+  }, [diagnostics]);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    const monacoApi = monacoRef.current;
+    if (!editor || !monacoApi) return;
+    monacoApi.editor.setTheme(theme === "dark" ? "sketch86-dark" : "sketch86-light");
+  }, [theme]);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    const monacoApi = monacoRef.current;
+    if (!editor || !monacoApi) return;
+
+    const lineNumber = executedLineNumber && executedLineNumber > 0 ? executedLineNumber : currentInstruction?.lineNumber;
+    decorationsRef.current = editor.deltaDecorations(
+      decorationsRef.current,
+      lineNumber
+        ? [
+            {
+              range: new monacoApi.Range(lineNumber, 1, lineNumber, 1),
+              options: {
+                isWholeLine: true,
+                className: executedLineNumber ? "executedLineHighlight" : "nextLineHighlight",
+                glyphMarginClassName: executedLineNumber ? "executedLineGlyph" : "nextLineGlyph",
+                linesDecorationsClassName: executedLineNumber ? "executedLineMarker" : "nextLineMarker"
+              }
+            }
+          ]
+        : []
+    );
+    if (lineNumber) editor.revealLineInCenterIfOutsideViewport(lineNumber);
+  }, [currentInstruction?.lineNumber, executedLineNumber]);
 
   const beforeMount = (monacoApi: typeof monaco) => {
     monacoApi.languages.register({ id: "sketch86asm" });
@@ -37,7 +85,11 @@ export function CodeEditor({ source, diagnostics, currentInstruction, onChange, 
   return (
     <div className="editorShell">
       <div className="activeLineNote">
-        {currentInstruction ? `Next: ${currentInstruction.text} @ ${currentInstruction.address.toString(16).toUpperCase().padStart(4, "0")}h` : "No active instruction"}
+        {executedLineNumber
+          ? `Executed line ${executedLineNumber}`
+          : currentInstruction
+            ? `Next: ${currentInstruction.text} @ ${currentInstruction.address.toString(16).toUpperCase().padStart(4, "0")}h`
+            : "No active instruction"}
       </div>
       <Editor
         height="100%"
@@ -49,7 +101,7 @@ export function CodeEditor({ source, diagnostics, currentInstruction, onChange, 
         onChange={(value) => onChange(value ?? "")}
         options={{
           minimap: { enabled: false },
-          fontFamily: "Comic Code, Comic Mono, Cascadia Mono, Fira Code, Consolas, monospace",
+          fontFamily: "Comic Sans MS, Comic Neue, Trebuchet MS, Segoe UI, sans-serif",
           fontSize: 14,
           lineHeight: 22,
           wordWrap: "on",
@@ -68,18 +120,18 @@ function defineThemes(monacoApi: typeof monaco) {
       base: "vs",
       inherit: true,
       rules: [
-        { token: "keyword", foreground: "27706c", fontStyle: "bold" },
-        { token: "number", foreground: "a85f38" },
-        { token: "string", foreground: "6f5632" },
-        { token: "comment", foreground: "7b817f", fontStyle: "italic" }
+        { token: "keyword", foreground: "236f70", fontStyle: "bold" },
+        { token: "number", foreground: "9d5d33" },
+        { token: "string", foreground: "6b5428" },
+        { token: "comment", foreground: "7c766b", fontStyle: "italic" }
       ],
       colors: {
         "editor.background": "#fffdfa",
         "editor.foreground": "#23201c",
         "editor.lineHighlightBackground": "#f1d58a55",
-        "editorCursor.foreground": "#a85f38",
+        "editorCursor.foreground": "#9d5d33",
         "editorLineNumber.foreground": "#8b8271",
-        "editorLineNumber.activeForeground": "#27706c"
+        "editorLineNumber.activeForeground": "#236f70"
       }
     });
 
@@ -87,18 +139,18 @@ function defineThemes(monacoApi: typeof monaco) {
     base: "vs-dark",
     inherit: true,
     rules: [
-      { token: "keyword", foreground: "82d7cc", fontStyle: "bold" },
-      { token: "number", foreground: "f0aa75" },
-      { token: "string", foreground: "f3d989" },
-      { token: "comment", foreground: "9da6a0", fontStyle: "italic" }
+      { token: "keyword", foreground: "7ed7c5", fontStyle: "bold" },
+      { token: "number", foreground: "f1b06d" },
+      { token: "string", foreground: "f4d783" },
+      { token: "comment", foreground: "b8ad9b", fontStyle: "italic" }
     ],
     colors: {
-      "editor.background": "#181b1a",
-      "editor.foreground": "#f4ead3",
-      "editor.lineHighlightBackground": "#31413d88",
-      "editorCursor.foreground": "#f0aa75",
-      "editorLineNumber.foreground": "#7f8983",
-      "editorLineNumber.activeForeground": "#82d7cc"
+      "editor.background": "#221d18",
+      "editor.foreground": "#fff1cf",
+      "editor.lineHighlightBackground": "#4b392866",
+      "editorCursor.foreground": "#f1b06d",
+      "editorLineNumber.foreground": "#9b8f7a",
+      "editorLineNumber.activeForeground": "#7ed7c5"
     }
   });
 }

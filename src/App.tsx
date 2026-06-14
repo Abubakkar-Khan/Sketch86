@@ -53,6 +53,7 @@ export default function App() {
   const assembled = useMemo(() => assemble(source), [source]);
   const cpuRef = useRef<CPU8086 | undefined>();
   const timerRef = useRef<number | undefined>();
+  const pausedForInputRef = useRef(false);
   const [state, setState] = useState<ExecutionState>(() => initialState());
   const [lastTrace, setLastTrace] = useState<TraceEntry | undefined>();
   const [terminalInput, setTerminalInput] = useState("");
@@ -70,6 +71,7 @@ export default function App() {
   useEffect(() => {
     window.clearInterval(timerRef.current);
     setIsRunning(false);
+    pausedForInputRef.current = false;
     if (assembled.program) {
       cpuRef.current = createCPU(assembled.program);
       setState(cpuRef.current.state());
@@ -89,12 +91,14 @@ export default function App() {
 
   const step = () => {
     if (!cpuRef.current) return;
+    pausedForInputRef.current = false;
     sync(cpuRef.current.step());
   };
 
   const tick = () => {
     const snapshot = cpuRef.current?.state();
     if (!cpuRef.current || snapshot?.halted || snapshot?.waitingForInput) {
+      pausedForInputRef.current = Boolean(snapshot?.waitingForInput);
       window.clearInterval(timerRef.current);
       setIsRunning(false);
       return;
@@ -105,22 +109,26 @@ export default function App() {
   const run = () => {
     window.clearInterval(timerRef.current);
     if (!cpuRef.current || state.halted || state.waitingForInput) return;
+    pausedForInputRef.current = false;
     setIsRunning(true);
     timerRef.current = window.setInterval(tick, runDelay);
   };
 
   const stop = () => {
     window.clearInterval(timerRef.current);
+    pausedForInputRef.current = false;
     setIsRunning(false);
   };
 
   const reset = () => {
     window.clearInterval(timerRef.current);
     setIsRunning(false);
+    pausedForInputRef.current = false;
     if (assembled.program) {
       cpuRef.current = createCPU(assembled.program);
       setState(cpuRef.current.state());
       setLastTrace(undefined);
+      setTerminalInput("");
     }
   };
 
@@ -128,16 +136,25 @@ export default function App() {
     const example = examples.find((item) => item.id === id) ?? examples[0];
     setSelectedExample(example.id);
     setSource(example.source);
+    setTerminalInput("");
     setActiveTab("lab");
   };
 
   const sendTerminalInput = () => {
     if (!cpuRef.current) return;
     const wasWaiting = cpuRef.current.state().waitingForInput;
+    if (!wasWaiting) return;
+    const shouldResumeRun = pausedForInputRef.current;
     cpuRef.current.provideInput(terminalInput.length > 0 ? terminalInput : "\r");
     setTerminalInput("");
-    if (wasWaiting) sync(cpuRef.current.step());
-    else setState(cpuRef.current.state());
+    sync(cpuRef.current.step());
+    const snapshot = cpuRef.current.state();
+    if (shouldResumeRun && !snapshot.halted && !snapshot.waitingForInput) {
+      pausedForInputRef.current = false;
+      setIsRunning(true);
+      window.clearInterval(timerRef.current);
+      timerRef.current = window.setInterval(tick, runDelay);
+    }
   };
 
   const updateRunSpeed = (speed: RunSpeed, delay: number) => {
@@ -152,7 +169,8 @@ export default function App() {
 
   return (
     <div className="appShell">
-      <header className="topBar">
+      <header className="topBar roughShape">
+        <RoughBorder strokeWidth={1.8} roughness={1.55} inset={3} />
         <div className="brandBlock">
           <h1>Sketch86</h1>
           <p className="tagline">8086 assembly lab</p>
@@ -168,11 +186,12 @@ export default function App() {
           <div className="segmentedControl" role="group" aria-label="Run speed">
             {SPEED_OPTIONS.map((option) => (
               <button
-                className={`speedButton ${runSpeed === option.id ? "active" : ""}`}
+                className={`speedButton roughShape ${runSpeed === option.id ? "active" : ""}`}
                 key={option.id}
                 onClick={() => updateRunSpeed(option.id, option.delay)}
                 type="button"
               >
+                <RoughBorder strokeWidth={1.35} roughness={1.45} inset={2} />
                 {option.label}
               </button>
             ))}
@@ -199,7 +218,14 @@ export default function App() {
               <h2>Code Editor</h2>
               <span>Monaco diagnostics</span>
             </div>
-            <CodeEditor source={source} diagnostics={assembled.diagnostics} currentInstruction={currentInstruction} onChange={setSource} theme={theme} />
+            <CodeEditor
+              source={source}
+              diagnostics={assembled.diagnostics}
+              currentInstruction={currentInstruction}
+              executedLineNumber={lastTrace?.lineNumber}
+              onChange={setSource}
+              theme={theme}
+            />
           </RoughPanel>
           <RoughPanel className="sketchPanel">
             <div className="panelHeader">

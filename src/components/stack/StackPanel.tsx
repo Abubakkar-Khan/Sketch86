@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { ExecutionState, StackChange } from "../../engine";
+import { RoughBorder } from "../rough/RoughBorder";
 import { RoughPanel } from "../rough/RoughPanel";
 
 export function StackPanel({ state, changes }: { state: ExecutionState; changes: StackChange[] }) {
@@ -18,7 +19,8 @@ export function StackPanel({ state, changes }: { state: ExecutionState; changes:
       </div>
       <div className="stackList">
         {rows.map((row, index) => (
-          <motion.div key={row.offset} className="stackItem" animate={changes.length && index === 0 ? { y: [-8, 0] } : {}}>
+          <motion.div key={row.offset} className="stackItem roughShape" animate={changes.length && index === 0 ? { y: [-8, 0] } : {}}>
+            <RoughBorder strokeWidth={1.3} roughness={1.45} inset={2} />
             <span>{index === 0 ? "TOP" : hex(row.offset)}</span>
             <strong>{hex(row.value)}</strong>
           </motion.div>

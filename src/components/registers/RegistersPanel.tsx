@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { CPUStateSnapshot, RegisterChange, Registers } from "../../engine";
+import { RoughBorder } from "../rough/RoughBorder";
 import { RoughPanel } from "../rough/RoughPanel";
 
 const REGISTER_ORDER: Array<keyof Registers> = ["AX", "BX", "CX", "DX", "SI", "DI", "BP", "SP", "CS", "DS", "ES", "SS", "IP"];
@@ -21,10 +22,11 @@ export function RegistersPanel({ snapshot, changes }: RegistersPanelProps) {
         {REGISTER_ORDER.map((name) => (
           <motion.div
             key={name}
-            className={`registerCard ${changed.has(name) ? "changed" : ""}`}
+            className={`registerCard roughShape ${changed.has(name) ? "changed" : ""}`}
             animate={changed.has(name) ? { scale: [1, 1.05, 1], y: [0, -3, 0] } : { scale: 1, y: 0 }}
             transition={{ duration: 0.28 }}
           >
+            <RoughBorder strokeWidth={1.4} roughness={1.45} inset={2} />
             <span>{name}</span>
             <strong>{hex(snapshot.registers[name])}</strong>
             {["AX", "BX", "CX", "DX"].includes(name) && <small>{byteLine(name, snapshot.registers[name])}</small>}

@@ -135,6 +135,24 @@ INT 21h`);
     expect(state.output.join("")).toBe("Z");
   });
 
+  it("consumes queued terminal text one character per INT 21h AH=01h", () => {
+    const result = assemble(`MOV AH, 01h
+INT 21h
+MOV BL, AL
+MOV AH, 01h
+INT 21h
+MOV BH, AL
+MOV AH, 4Ch
+INT 21h`);
+    expect(result.diagnostics.filter((d) => d.severity === "error")).toEqual([]);
+    const cpu = createCPU(result.program!);
+    cpu.provideInput("OK");
+    cpu.run();
+    const state = cpu.state();
+    expect(state.registers.BX).toBe(("K".charCodeAt(0) << 8) | "O".charCodeAt(0));
+    expect(state.output.join("")).toBe("OK");
+  });
+
   it("pauses at INT 21h AH=01h when no terminal input is queued", () => {
     const result = assemble(`MOV AH, 01h
 INT 21h

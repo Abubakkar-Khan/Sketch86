@@ -1,4 +1,5 @@
 import type { SupportMatrixEntry } from "../../engine";
+import { RoughBorder } from "../rough/RoughBorder";
 import { RoughPanel } from "../rough/RoughPanel";
 
 export function SupportMatrix({ entries }: { entries: SupportMatrixEntry[] }) {
@@ -17,7 +18,10 @@ export function SupportMatrix({ entries }: { entries: SupportMatrixEntry[] }) {
           <div className="matrixRow" key={`${entry.category}-${entry.feature}`}>
             <span>{entry.category}</span>
             <strong>{entry.feature}</strong>
-            <b className={`status ${entry.status}`}>{entry.status}</b>
+            <b className={`status roughShape ${entry.status}`}>
+              <RoughBorder strokeWidth={1.2} roughness={1.35} inset={1} />
+              {entry.status}
+            </b>
             <span>{entry.notes}</span>
           </div>
         ))}

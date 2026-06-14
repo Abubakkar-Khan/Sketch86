@@ -27,29 +27,31 @@ export function ConsolePanel({ output, trace, diagnostics, errors, input, disabl
         <span className="terminalPrompt">stdin</span>
         <span className="terminalInputWrap roughShape">
           <RoughBorder strokeWidth={1.6} roughness={1.8} />
-          <input
+          <textarea
             value={input}
             disabled={disabled}
-            placeholder={waitingForInput ? "Input needed now" : "Type characters for INT 21h AH=01h"}
+            placeholder={waitingForInput ? "Type or paste input. Send queues it for AH=01h." : "Stdin editor: queued text is consumed one character at a time."}
             onChange={(event) => onInputChange(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter") {
+              if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
                 event.preventDefault();
                 onSendInput();
               }
             }}
           />
         </span>
-        <button className="terminalSend roughShape" disabled={disabled} onClick={onSendInput}>
+        <button className="terminalSend roughShape" disabled={disabled || !waitingForInput} onClick={onSendInput}>
           <RoughBorder strokeWidth={1.6} roughness={1.8} />
-          Send
+          {waitingForInput ? "Send input" : "Waiting"}
         </button>
       </div>
-      <div className="explanationBox">
+      <div className="explanationBox roughShape">
+        <RoughBorder strokeWidth={1.4} roughness={1.45} inset={2} />
         {last?.explanation ?? "Assemble and step through a program to see explanations."}
       </div>
       {(diagnostics.length > 0 || errors.length > 0) && (
-        <div className="diagnosticsBox">
+        <div className="diagnosticsBox roughShape">
+          <RoughBorder strokeWidth={1.4} roughness={1.45} inset={2} />
           {[...diagnostics, ...errors.map((error) => ({ message: error.message, location: { line: error.lineNumber ?? 0, column: 1, offset: 0 }, severity: "error" as const }))].map((item, index) => (
             <div key={`${item.message}-${index}`}>Line {item.location.line || "runtime"}: {item.message}</div>
           ))}
