@@ -25,6 +25,7 @@
   --console-text: #fff8e8;
   --danger-soft: rgba(200, 104, 88, 0.18);
   --danger-text: #713128;
+  --memory-changed-bg: color-mix(in srgb, var(--warm) 50%, var(--panel-strong));
 }
 
 :root[data-theme="dark"] {
@@ -48,6 +49,7 @@
   --console-text: #fff1cf;
   --danger-soft: rgba(236, 138, 120, 0.18);
   --danger-text: #ffd2c9;
+  --memory-changed-bg: color-mix(in srgb, var(--warm) 24%, var(--panel-strong));
 }
 
 * {
@@ -617,6 +619,7 @@ h1 {
 }
 
 .byte.changed {
+  background: var(--memory-changed-bg);
   color: var(--warn);
   font-weight: 900;
 }

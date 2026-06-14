@@ -25,7 +25,7 @@ export function MemoryPanel({ state, program, changes }: { state: ExecutionState
                   <motion.b
                     key={address}
                     className={changed.has(address) ? "byte changed" : "byte"}
-                    animate={changed.has(address) ? { y: [-4, 0], backgroundColor: ["#f3dfad", "#fffdf8"] } : {}}
+                    animate={changed.has(address) ? { y: [-4, 0] } : {}}
                   >
                     {hexByte(state.memory[address] ?? 0)}
                   </motion.b>
