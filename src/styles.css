@@ -26,6 +26,10 @@
   --danger-soft: rgba(200, 104, 88, 0.18);
   --danger-text: #713128;
   --memory-changed-bg: color-mix(in srgb, var(--warm) 50%, var(--panel-strong));
+  --cursor-default: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M5 3 L24 17 L15 19 L11 28 L5 3 Z' fill='%23fff8e8' stroke='%2323201c' stroke-width='2.4' stroke-linejoin='round'/%3E%3Cpath d='M9 8 L18 15' fill='none' stroke='%2327706c' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") 5 3, auto;
+  --cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M12 3 C10 3 9 4 9 6 L9 16 L7 14 C5 13 3 14 4 17 L9 27 C10 29 12 30 15 30 L21 30 C25 30 27 27 27 23 L27 15 C27 13 25 12 24 13 C23 11 21 11 20 12 C19 10 17 10 16 11 L16 6 C16 4 14 3 12 3 Z' fill='%23fff8e8' stroke='%2323201c' stroke-width='2.1' stroke-linejoin='round'/%3E%3Cpath d='M12 6 L12 18 M16 12 L16 18 M20 14 L20 19 M24 16 L24 20' stroke='%2327706c' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E") 12 4, pointer;
+  --cursor-text: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M15 5 C12 5 10 6 8 8 M17 5 C20 5 22 6 24 8 M16 5 L16 27 M9 24 C11 26 13 27 16 27 M23 24 C21 26 19 27 16 27' fill='none' stroke='%2323201c' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M13 7 L19 7 M13 25 L19 25' stroke='%23fff8e8' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") 16 16, text;
+  --cursor-disabled: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='15' cy='15' r='10' fill='%23fff8e8' stroke='%2323201c' stroke-width='2.3'/%3E%3Cpath d='M8 22 L22 8' stroke='%23c86858' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") 15 15, not-allowed;
 }
 
 :root[data-theme="dark"] {
@@ -54,6 +58,7 @@
 
 * {
   box-sizing: border-box;
+  cursor: var(--cursor-default);
 }
 
 html,
@@ -96,7 +101,7 @@ button {
   min-height: 34px;
   padding: 0 12px;
   overflow: hidden;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   box-shadow: 2px 3px 0 var(--shadow);
   transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
@@ -107,7 +112,7 @@ button:hover:not(:disabled) {
 }
 
 button:disabled {
-  cursor: not-allowed;
+  cursor: var(--cursor-disabled);
   opacity: 0.46;
 }
 
@@ -121,7 +126,7 @@ select {
   padding: 0 30px 0 11px;
   background: transparent;
   box-shadow: none;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
 }
 
 input,
@@ -140,6 +145,21 @@ input {
 textarea {
   min-height: 58px;
   resize: vertical;
+}
+
+input,
+textarea,
+.monaco-editor,
+.monaco-editor *,
+.editorShell {
+  cursor: var(--cursor-text) !important;
+}
+
+button *,
+select *,
+.exampleCard *,
+.tabs button * {
+  cursor: inherit;
 }
 
 .roughShape {
