@@ -16,16 +16,19 @@ export const examples: ExampleProgram[] = [
     explanation: "Introduces immediate values and register writes.",
     source: `.model small
 .stack 100h
+
 .data
-first dw 5
-second dw 3
+    first  dw 5
+    second dw 3
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV ax, first
-MOV bx, second
-HLT
+    MOV ax, @data
+    MOV ds, ax
+    MOV ax, first
+    MOV bx, second
+    HLT
+
 END main`
   },
   {
@@ -36,19 +39,22 @@ END main`
     explanation: "Adds BX into AX and updates arithmetic flags.",
     source: `.model small
 .stack 100h
+
 .data
-first dw 5
-second dw 3
-result dw ?
+    first  dw 5
+    second dw 3
+    result dw ?
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV ax, first
-MOV bx, second
-ADD ax, bx
-MOV result, ax
-HLT
+    MOV ax, @data
+    MOV ds, ax
+    MOV ax, first
+    MOV bx, second
+    ADD ax, bx
+    MOV result, ax
+    HLT
+
 END main`
   },
   {
@@ -59,18 +65,21 @@ END main`
     explanation: "Subtracts a value and shows how flags change.",
     source: `.model small
 .stack 100h
+
 .data
-startValue dw 9
-minusValue dw 4
-difference dw ?
+    startValue dw 9
+    minusValue dw 4
+    difference dw ?
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV ax, startValue
-SUB ax, minusValue
-MOV difference, ax
-HLT
+    MOV ax, @data
+    MOV ds, ax
+    MOV ax, startValue
+    SUB ax, minusValue
+    MOV difference, ax
+    HLT
+
 END main`
   },
   {
@@ -81,17 +90,20 @@ END main`
     explanation: "Compares values without storing the subtraction result.",
     source: `.model small
 .stack 100h
+
 .data
-leftValue dw 7
-rightValue dw 7
+    leftValue  dw 7
+    rightValue dw 7
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV ax, leftValue
-MOV bx, rightValue
-CMP ax, bx
-HLT
+    MOV ax, @data
+    MOV ds, ax
+    MOV ax, leftValue
+    MOV bx, rightValue
+    CMP ax, bx
+    HLT
+
 END main`
   },
   {
@@ -102,23 +114,27 @@ END main`
     explanation: "Jumps to a label when ZF is set.",
     source: `.model small
 .stack 100h
+
 .data
-value dw 4
-matched dw ?
+    value   dw 4
+    matched dw ?
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV ax, value
-CMP ax, 4
-JE equal
-MOV bx, 0
-MOV matched, bx
-HLT
+    MOV ax, @data
+    MOV ds, ax
+    MOV ax, value
+    CMP ax, 4
+    JE equal
+    MOV bx, 0
+    MOV matched, bx
+    HLT
+
 equal:
-MOV bx, 1
-MOV matched, bx
-HLT
+    MOV bx, 1
+    MOV matched, bx
+    HLT
+
 END main`
   },
   {
@@ -129,20 +145,24 @@ END main`
     explanation: "Uses CX as the loop counter.",
     source: `.model small
 .stack 100h
+
 .data
-count dw 4
-total dw ?
+    count dw 4
+    total dw ?
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV cx, count
-MOV ax, 0
+    MOV ax, @data
+    MOV ds, ax
+    MOV cx, count
+    MOV ax, 0
+
 again:
-INC ax
-LOOP again
-MOV total, ax
-HLT
+    INC ax
+    LOOP again
+    MOV total, ax
+    HLT
+
 END main`
   },
   {
@@ -153,19 +173,22 @@ END main`
     explanation: "Shows the stack growing downward in memory.",
     source: `.model small
 .stack 100h
+
 .data
-value dw 1234h
-copied dw ?
+    value  dw 1234h
+    copied dw ?
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV ax, value
-PUSH ax
-MOV ax, 0
-POP bx
-MOV copied, bx
-HLT
+    MOV ax, @data
+    MOV ds, ax
+    MOV ax, value
+    PUSH ax
+    MOV ax, 0
+    POP bx
+    MOV copied, bx
+    HLT
+
 END main`
   },
   {
@@ -176,20 +199,24 @@ END main`
     explanation: "CALL stores a return address on the stack, then RET restores it.",
     source: `.model small
 .stack 100h
+
 .data
-value dw 1
+    value dw 1
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV ax, value
-CALL add_more
-MOV value, ax
-HLT
+    MOV ax, @data
+    MOV ds, ax
+    MOV ax, value
+    CALL add_more
+    MOV value, ax
+    HLT
+
 add_more PROC
-ADD ax, 4
-RET
+    ADD ax, 4
+    RET
 add_more ENDP
+
 END main`
   },
   {
@@ -200,51 +227,64 @@ END main`
     explanation: "Sums a word array and prints the decimal result.",
     source: `.model small
 .stack 100h
+
 .data
-arr dw 5, 10, 15, 20, 25
-size dw 5
-sum dw ?
-msg db "The sum of the array [5, 10, 15, 20, 25] is: $"
+    arr  dw 5, 10, 15, 20, 25
+    size dw 5
+    sum  dw ?
+    msg  db "The sum of the array [5, 10, 15, 20, 25] is: $"
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-LEA dx, msg
-MOV ah, 9h
-INT 21h
-CALL sum_array
-CALL display_int
-MOV ah, 4Ch
-INT 21h
+    MOV ax, @data
+    MOV ds, ax
+
+    LEA dx, msg
+    MOV ah, 9h
+    INT 21h
+
+    CALL sum_array
+    CALL display_int
+
+    MOV ah, 4Ch
+    INT 21h
+
 sum_array PROC
-MOV cx, size
-MOV si, 0
-MOV ax, 0
+    MOV cx, size
+    MOV si, 0
+    MOV ax, 0
+
 Add_loop:
-ADD ax, arr[si]
-ADD si, 2
-LOOP Add_loop
-MOV sum, ax
-RET
+    ADD ax, arr[si]
+    ADD si, 2
+    LOOP Add_loop
+
+    MOV sum, ax
+    RET
 sum_array ENDP
+
 display_int PROC
-MOV ax, sum
-MOV bl, 10
-DIV bl
-MOV bh, ah
-CMP al, 0
-JE SINGLE
-MOV dl, al
-ADD dl, 48
-MOV ah, 2h
-INT 21h
+    MOV ax, sum
+    MOV bl, 10
+    DIV bl
+    MOV bh, ah
+
+    CMP al, 0
+    JE SINGLE
+
+    MOV dl, al
+    ADD dl, 48
+    MOV ah, 2h
+    INT 21h
+
 SINGLE:
-MOV dl, bh
-ADD dl, 30h
-MOV ah, 2h
-INT 21h
-RET
+    MOV dl, bh
+    ADD dl, 30h
+    MOV ah, 2h
+    INT 21h
+    RET
 display_int ENDP
+
 END main`
   },
   {
@@ -255,28 +295,34 @@ END main`
     explanation: "Scans a word array and keeps the largest value in AX.",
     source: `.model small
 .stack 100h
+
 .data
-nums dw 8, 3, 12, 5
-count dw 4
-max dw ?
+    nums  dw 8, 3, 12, 5
+    count dw 4
+    max   dw ?
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV cx, count
-MOV si, 0
-MOV ax, nums[si]
-ADD si, 2
-DEC cx
+    MOV ax, @data
+    MOV ds, ax
+
+    MOV cx, count
+    MOV si, 0
+    MOV ax, nums[si]
+    ADD si, 2
+    DEC cx
+
 scan:
-CMP ax, nums[si]
-JGE keep
-MOV ax, nums[si]
+    CMP ax, nums[si]
+    JGE keep
+    MOV ax, nums[si]
+
 keep:
-ADD si, 2
-LOOP scan
-MOV max, ax
-HLT
+    ADD si, 2
+    LOOP scan
+    MOV max, ax
+    HLT
+
 END main`
   },
   {
@@ -287,17 +333,22 @@ END main`
     explanation: "Prints the character stored in DL.",
     source: `.model small
 .stack 100h
+
 .data
-letter db 'A'
+    letter db 'A'
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV dl, letter
-MOV ah, 02h
-INT 21h
-MOV ah, 4Ch
-INT 21h
+    MOV ax, @data
+    MOV ds, ax
+
+    MOV dl, letter
+    MOV ah, 02h
+    INT 21h
+
+    MOV ah, 4Ch
+    INT 21h
+
 END main`
   },
   {
@@ -308,17 +359,22 @@ END main`
     explanation: "Prints a $-terminated string from DS:DX.",
     source: `.model small
 .stack 100h
+
 .data
-msg db 'Hello from Sketch86$'
+    msg db 'Hello from Sketch86$'
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-LEA dx, msg
-MOV ah, 09h
-INT 21h
-MOV ah, 4Ch
-INT 21h
+    MOV ax, @data
+    MOV ds, ax
+
+    LEA dx, msg
+    MOV ah, 09h
+    INT 21h
+
+    MOV ah, 4Ch
+    INT 21h
+
 END main`
   },
   {
@@ -329,18 +385,22 @@ END main`
     explanation: "Reads and writes named data values.",
     source: `.model small
 .stack 100h
+
 .data
-score db 42
-total dw ?
+    score db 42
+    total dw ?
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV al, score
-ADD al, 1
-MOV ah, 0
-MOV total, ax
-HLT
+    MOV ax, @data
+    MOV ds, ax
+
+    MOV al, score
+    ADD al, 1
+    MOV ah, 0
+    MOV total, ax
+    HLT
+
 END main`
   },
   {
@@ -351,16 +411,20 @@ END main`
     explanation: "Subtracts equal values to turn on ZF.",
     source: `.model small
 .stack 100h
+
 .data
-leftValue dw 1
-rightValue dw 1
+    leftValue  dw 1
+    rightValue dw 1
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV ax, leftValue
-SUB ax, rightValue
-HLT
+    MOV ax, @data
+    MOV ds, ax
+
+    MOV ax, leftValue
+    SUB ax, rightValue
+    HLT
+
 END main`
   },
   {
@@ -371,16 +435,20 @@ END main`
     explanation: "Shows how AH and AL map onto AX.",
     source: `.model small
 .stack 100h
+
 .data
-wordValue dw 1234h
+    wordValue dw 1234h
+
 .code
 main:
-MOV ax, @data
-MOV ds, ax
-MOV ax, wordValue
-MOV al, 56h
-MOV ah, 78h
-HLT
+    MOV ax, @data
+    MOV ds, ax
+
+    MOV ax, wordValue
+    MOV al, 56h
+    MOV ah, 78h
+    HLT
+
 END main`
   }
 ];
