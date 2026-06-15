@@ -137,6 +137,8 @@ export const FULLY_SUPPORTED = new Set([
   "HLT"
 ]);
 
+export const COMPATIBILITY_SUPPORTED = new Set(["PUSHA", "POPA"]);
+
 export const PARTIAL_SUPPORTED = new Set([
   "LDS",
   "LES",
@@ -158,9 +160,9 @@ export const PARTIAL_SUPPORTED = new Set([
   "DAS"
 ]);
 
-export const UNSUPPORTED = new Set(["IN", "OUT", "WAIT", "ESC", "LOCK"]);
+export const UNSUPPORTED = new Set(["IN", "OUT", "WAIT", "ESC", "LOCK", "PUSHAD", "POPAD", "ENTER", "LEAVE"]);
 
-export const MNEMONICS = new Set([...FULLY_SUPPORTED, ...PARTIAL_SUPPORTED, ...UNSUPPORTED]);
+export const MNEMONICS = new Set([...FULLY_SUPPORTED, ...COMPATIBILITY_SUPPORTED, ...PARTIAL_SUPPORTED, ...UNSUPPORTED]);
 
 export const DIRECTIVES = new Set([
   "ORG",
@@ -205,6 +207,12 @@ export function getSupportMatrix(): SupportMatrixEntry[] {
       feature,
       status: "supported" as const,
       notes: "Implemented in the educational CPU engine."
+    })),
+    ...[...COMPATIBILITY_SUPPORTED].sort().map((feature) => ({
+      category: "Instruction",
+      feature,
+      status: "supported" as const,
+      notes: "80186+ instruction; supported for classroom/emulator compatibility, not base 8086."
     })),
     ...[...PARTIAL_SUPPORTED].sort().map((feature) => ({
       category: "Instruction",

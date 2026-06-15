@@ -12,6 +12,12 @@ function runSource(source: string, max = 500) {
   return cpu.state();
 }
 
+function readWordFromState(state: ReturnType<typeof runSource>, offset: number) {
+  const lo = state.memory[offset & 0xffff] ?? 0;
+  const hi = state.memory[(offset + 1) & 0xffff] ?? 0;
+  return lo | (hi << 8);
+}
+
 describe("lexer", () => {
   it("recognizes comments, strings, numbers, registers, and brackets", () => {
     const result = lex("MOV AX, [BX+SI+4] ; comment\nmsg DB 'Hello$', 0FFh");
@@ -65,6 +71,16 @@ MOV WORD PTR [1000h], AL`);
     expect(result.diagnostics.some((d) => d.code === "UNKNOWN_SYMBOL")).toBe(true);
     expect(result.diagnostics.some((d) => d.code === "OPERAND_SIZE_MISMATCH")).toBe(true);
   });
+
+  it("reports unsupported 32-bit and frame compatibility instructions", () => {
+    const result = assemble(`PUSHAD
+POPAD
+ENTER 0, 0
+LEAVE`);
+    const unsupported = result.diagnostics.filter((d) => d.code === "UNSUPPORTED_INSTRUCTION");
+    expect(unsupported).toHaveLength(4);
+    expect(result.program).toBeUndefined();
+  });
 });
 
 describe("cpu", () => {
@@ -103,6 +119,59 @@ POP BX
 RET`);
     expect(state.registers.BX).toBe(2);
     expect(state.registers.SP).toBe(0xfffe);
+  });
+
+  it("supports PUSHA with the original SP word", () => {
+    const state = runSource(`MOV AX, 1111h
+MOV CX, 2222h
+MOV DX, 3333h
+MOV BX, 4444h
+MOV BP, 5555h
+MOV SI, 6666h
+MOV DI, 7777h
+PUSHA
+HLT`);
+    expect(state.registers.SP).toBe(0xffee);
+    expect(readWordFromState(state, 0xfffc)).toBe(0x1111);
+    expect(readWordFromState(state, 0xfffa)).toBe(0x2222);
+    expect(readWordFromState(state, 0xfff8)).toBe(0x3333);
+    expect(readWordFromState(state, 0xfff6)).toBe(0x4444);
+    expect(readWordFromState(state, 0xfff4)).toBe(0xfffe);
+    expect(readWordFromState(state, 0xfff2)).toBe(0x5555);
+    expect(readWordFromState(state, 0xfff0)).toBe(0x6666);
+    expect(readWordFromState(state, 0xffee)).toBe(0x7777);
+    expect(state.trace.find((entry) => entry.instructionText === "PUSHA")?.changes.stack).toHaveLength(8);
+  });
+
+  it("supports POPA by restoring registers and discarding saved SP", () => {
+    const state = runSource(`MOV AX, 1111h
+MOV CX, 2222h
+MOV DX, 3333h
+MOV BX, 4444h
+MOV BP, 5555h
+MOV SI, 6666h
+MOV DI, 7777h
+PUSHA
+MOV AX, 0
+MOV CX, 0
+MOV DX, 0
+MOV BX, 0
+MOV BP, 0
+MOV SI, 0
+MOV DI, 0
+POPA
+HLT`);
+    expect(state.registers).toMatchObject({
+      AX: 0x1111,
+      CX: 0x2222,
+      DX: 0x3333,
+      BX: 0x4444,
+      BP: 0x5555,
+      SI: 0x6666,
+      DI: 0x7777,
+      SP: 0xfffe
+    });
+    expect(state.trace.find((entry) => entry.instructionText === "POPA")?.changes.stack).toHaveLength(8);
   });
 
   it("prints INT 21h strings and characters", () => {

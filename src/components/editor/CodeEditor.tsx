@@ -90,7 +90,7 @@ export function CodeEditor({ source, diagnostics, currentInstruction, executedLi
         root: [
           [/;.*$/, "comment"],
           [/"[^"]*"|'[^']*'/, "string"],
-          [/\b(?:MOV|ADD|SUB|CMP|JMP|JE|JNE|JNZ|LOOP|CALL|RET|INT|HLT|PUSH|POP|DIV|MUL|AND|OR|XOR|NOT|TEST|SHL|SHR)\b/i, "keyword"],
+          [/\b(?:MOV|ADD|SUB|CMP|JMP|JE|JNE|JNZ|LOOP|CALL|RET|INT|HLT|PUSH|POP|PUSHA|POPA|PUSHF|POPF|DIV|MUL|AND|OR|XOR|NOT|TEST|SHL|SHR)\b/i, "keyword"],
           [/\b(?:AX|BX|CX|DX|AH|AL|BH|BL|CH|CL|DH|DL|SI|DI|BP|SP|CS|DS|ES|SS|IP)\b/i, "type.identifier"],
           [/\b(?:[0-9A-F]+h|[01]+b|\d+)\b/i, "number"]
         ]

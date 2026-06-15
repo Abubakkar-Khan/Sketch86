@@ -331,6 +331,19 @@ AL = 56h  -> AX = 1256h
 AH = 56h  -> AX = 5634h
 ```
 
+### Compatibility Instructions
+
+Sketch86 supports `PUSHA` and `POPA` for classroom/emulator compatibility:
+
+```asm
+PUSHA   ; Push AX, CX, DX, BX, original SP, BP, SI, DI
+POPA    ; Pop DI, SI, BP, discard saved SP, then pop BX, DX, CX, AX
+```
+
+Important accuracy note: `PUSHA` and `POPA` are **80186+ instructions**, not original 8086 instructions. Sketch86 supports them because many students encounter them in examples and teaching tools, but the Support Matrix labels them as compatibility behavior.
+
+32-bit forms such as `PUSHAD` and `POPAD` are recognized but unsupported because Sketch86 is an educational 16-bit simulator.
+
 ### Flags
 
 Visible flags:
@@ -540,6 +553,7 @@ Current tests cover engine-level behavior such as:
 - 1 MB memory reads/writes and little-endian word storage.
 - Valid and invalid 8086 addressing modes.
 - Arithmetic, logical, stack, jumps, calls, returns, flags, and interrupts.
+- Compatibility stack instructions such as `PUSHA` and `POPA`.
 - Example regressions, including the array-sum program.
 
 ## 16. Compatibility and Limitations
@@ -551,6 +565,8 @@ The in-app Support Matrix is the source of truth for current support. At a high 
 | Area | Status |
 | --- | --- |
 | Core classroom instructions | Supported for educational execution. |
+| `PUSHA` / `POPA` | Supported as 80186+ classroom/emulator compatibility instructions. |
+| `PUSHAD` / `POPAD` | Unsupported because they are 32-bit instructions. |
 | Some advanced or environment-specific instructions | Partial or unsupported. |
 | MASM/TASM classroom directives | Supported or accepted with honest limits. |
 | Full assembler macro system | Not supported. |

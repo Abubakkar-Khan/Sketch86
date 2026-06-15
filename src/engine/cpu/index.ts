@@ -175,6 +175,10 @@ export class CPU8086 {
       case "POP":
         this.write(op[0], this.pop("pop"), 16);
         return `POP copied the word at SS:SP into ${op[0].text}.`;
+      case "PUSHA":
+        return this.pusha();
+      case "POPA":
+        return this.popa();
       case "PUSHF":
         return this.push(flagsToWord(this.flags), "push");
       case "POPF":
@@ -297,6 +301,10 @@ export class CPU8086 {
       case "WAIT":
       case "ESC":
       case "LOCK":
+      case "PUSHAD":
+      case "POPAD":
+      case "ENTER":
+      case "LEAVE":
       case "IN":
       case "OUT":
         throw new Error(`${mnemonic} is not supported yet in this browser simulator.`);
@@ -332,6 +340,21 @@ export class CPU8086 {
     const offset = (getRegister(this.registers, "BX") + getRegister(this.registers, "AL")) & 0xffff;
     setRegister(this.registers, "AL", this.memory.readByte(this.registers.DS, offset));
     return "XLAT loaded AL from DS:[BX+AL].";
+  }
+
+  private pusha(): string {
+    const originalSp = getRegister(this.registers, "SP");
+    for (const name of ["AX", "CX", "DX", "BX"] as const) this.push(getRegister(this.registers, name), "push");
+    this.push(originalSp, "push");
+    for (const name of ["BP", "SI", "DI"] as const) this.push(getRegister(this.registers, name), "push");
+    return "PUSHA saved AX, CX, DX, BX, original SP, BP, SI, and DI on the stack.";
+  }
+
+  private popa(): string {
+    for (const name of ["DI", "SI", "BP"] as const) setRegister(this.registers, name, this.pop("pop"));
+    this.pop("pop");
+    for (const name of ["BX", "DX", "CX", "AX"] as const) setRegister(this.registers, name, this.pop("pop"));
+    return "POPA restored DI, SI, BP, BX, DX, CX, and AX; the saved SP word was discarded.";
   }
 
   private binaryArithmetic(dest: Operand, src: Operand, op: string): string {
