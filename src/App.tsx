@@ -49,7 +49,6 @@ function initialState(cpu?: CPU8086): ExecutionState {
 export default function App() {
   const [source, setSource] = useState(examples[8].source);
   const [activeTab, setActiveTab] = useState<AppTab>("lab");
-  const [selectedExample, setSelectedExample] = useState(examples[8].id);
   const assembled = useMemo(() => assemble(source), [source]);
   const cpuRef = useRef<CPU8086 | undefined>();
   const timerRef = useRef<number | undefined>();
@@ -134,7 +133,6 @@ export default function App() {
 
   const loadExample = (id: string) => {
     const example = examples.find((item) => item.id === id) ?? examples[0];
-    setSelectedExample(example.id);
     setSource(example.source);
     setTerminalInput("");
     setActiveTab("lab");
@@ -200,12 +198,6 @@ export default function App() {
             <RoughBorder />
             {theme === "dark" ? "Light" : "Dark"}
           </button>
-          <span className="selectWrap roughShape">
-            <RoughBorder />
-            <select value={selectedExample} onChange={(event) => loadExample(event.target.value)} aria-label="Load example">
-              {examples.map((example) => <option key={example.id} value={example.id}>{example.title}</option>)}
-            </select>
-          </span>
         </div>
       </header>
 

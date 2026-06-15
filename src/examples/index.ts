@@ -14,10 +14,19 @@ export const examples: ExampleProgram[] = [
     difficulty: "Beginner",
     concepts: ["MOV", "registers", "immediates"],
     explanation: "Introduces immediate values and register writes.",
-    source: `ORG 100h
-MOV AX, 5
-MOV BX, 3
-HLT`
+    source: `.model small
+.stack 100h
+.data
+first dw 5
+second dw 3
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV ax, first
+MOV bx, second
+HLT
+END main`
   },
   {
     id: "add-two",
@@ -25,11 +34,22 @@ HLT`
     difficulty: "Beginner",
     concepts: ["ADD", "flags", "registers"],
     explanation: "Adds BX into AX and updates arithmetic flags.",
-    source: `ORG 100h
-MOV AX, 5
-MOV BX, 3
-ADD AX, BX
-HLT`
+    source: `.model small
+.stack 100h
+.data
+first dw 5
+second dw 3
+result dw ?
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV ax, first
+MOV bx, second
+ADD ax, bx
+MOV result, ax
+HLT
+END main`
   },
   {
     id: "subtract-two",
@@ -37,10 +57,21 @@ HLT`
     difficulty: "Beginner",
     concepts: ["SUB", "ZF", "CF"],
     explanation: "Subtracts a value and shows how flags change.",
-    source: `ORG 100h
-MOV AX, 9
-SUB AX, 4
-HLT`
+    source: `.model small
+.stack 100h
+.data
+startValue dw 9
+minusValue dw 4
+difference dw ?
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV ax, startValue
+SUB ax, minusValue
+MOV difference, ax
+HLT
+END main`
   },
   {
     id: "compare",
@@ -48,11 +79,20 @@ HLT`
     difficulty: "Beginner",
     concepts: ["CMP", "ZF", "conditional logic"],
     explanation: "Compares values without storing the subtraction result.",
-    source: `ORG 100h
-MOV AX, 7
-MOV BX, 7
-CMP AX, BX
-HLT`
+    source: `.model small
+.stack 100h
+.data
+leftValue dw 7
+rightValue dw 7
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV ax, leftValue
+MOV bx, rightValue
+CMP ax, bx
+HLT
+END main`
   },
   {
     id: "conditional-jump",
@@ -60,15 +100,26 @@ HLT`
     difficulty: "Beginner",
     concepts: ["CMP", "JE", "labels"],
     explanation: "Jumps to a label when ZF is set.",
-    source: `ORG 100h
-MOV AX, 4
-CMP AX, 4
+    source: `.model small
+.stack 100h
+.data
+value dw 4
+matched dw ?
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV ax, value
+CMP ax, 4
 JE equal
-MOV BX, 0
+MOV bx, 0
+MOV matched, bx
 HLT
 equal:
-MOV BX, 1
-HLT`
+MOV bx, 1
+MOV matched, bx
+HLT
+END main`
   },
   {
     id: "cx-loop",
@@ -76,13 +127,23 @@ HLT`
     difficulty: "Beginner",
     concepts: ["LOOP", "CX", "labels"],
     explanation: "Uses CX as the loop counter.",
-    source: `ORG 100h
-MOV CX, 4
-MOV AX, 0
+    source: `.model small
+.stack 100h
+.data
+count dw 4
+total dw ?
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV cx, count
+MOV ax, 0
 again:
-INC AX
+INC ax
 LOOP again
-HLT`
+MOV total, ax
+HLT
+END main`
   },
   {
     id: "stack",
@@ -90,12 +151,22 @@ HLT`
     difficulty: "Beginner",
     concepts: ["PUSH", "POP", "SS:SP"],
     explanation: "Shows the stack growing downward in memory.",
-    source: `ORG 100h
-MOV AX, 1234h
-PUSH AX
-MOV AX, 0
-POP BX
-HLT`
+    source: `.model small
+.stack 100h
+.data
+value dw 1234h
+copied dw ?
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV ax, value
+PUSH ax
+MOV ax, 0
+POP bx
+MOV copied, bx
+HLT
+END main`
   },
   {
     id: "procedure",
@@ -103,14 +174,23 @@ HLT`
     difficulty: "Explorer",
     concepts: ["CALL", "RET", "procedure"],
     explanation: "CALL stores a return address on the stack, then RET restores it.",
-    source: `ORG 100h
-MOV AX, 1
+    source: `.model small
+.stack 100h
+.data
+value dw 1
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV ax, value
 CALL add_more
+MOV value, ax
 HLT
 add_more PROC
-ADD AX, 4
+ADD ax, 4
 RET
-add_more ENDP`
+add_more ENDP
+END main`
   },
   {
     id: "array-sum",
@@ -173,25 +253,31 @@ END main`
     difficulty: "Classwork",
     concepts: ["arrays", "CMP", "JGE", "LOOP"],
     explanation: "Scans a word array and keeps the largest value in AX.",
-    source: `.data
+    source: `.model small
+.stack 100h
+.data
 nums dw 8, 3, 12, 5
 count dw 4
 max dw ?
 .code
-MOV CX, count
-MOV SI, 0
-MOV AX, nums[SI]
-ADD SI, 2
-DEC CX
+main:
+MOV ax, @data
+MOV ds, ax
+MOV cx, count
+MOV si, 0
+MOV ax, nums[si]
+ADD si, 2
+DEC cx
 scan:
-CMP AX, nums[SI]
+CMP ax, nums[si]
 JGE keep
-MOV AX, nums[SI]
+MOV ax, nums[si]
 keep:
-ADD SI, 2
+ADD si, 2
 LOOP scan
-MOV max, AX
-HLT`
+MOV max, ax
+HLT
+END main`
   },
   {
     id: "print-char",
@@ -199,11 +285,20 @@ HLT`
     difficulty: "Beginner",
     concepts: ["INT 21h", "AH=02h", "DL"],
     explanation: "Prints the character stored in DL.",
-    source: `ORG 100h
-MOV DL, 'A'
-MOV AH, 02h
+    source: `.model small
+.stack 100h
+.data
+letter db 'A'
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV dl, letter
+MOV ah, 02h
 INT 21h
-HLT`
+MOV ah, 4Ch
+INT 21h
+END main`
   },
   {
     id: "print-string",
@@ -211,13 +306,20 @@ HLT`
     difficulty: "Beginner",
     concepts: ["DB", "LEA", "INT 21h"],
     explanation: "Prints a $-terminated string from DS:DX.",
-    source: `.data
-msg db 'Hello from Sketch86$', 0
+    source: `.model small
+.stack 100h
+.data
+msg db 'Hello from Sketch86$'
 .code
-LEA DX, msg
-MOV AH, 09h
+main:
+MOV ax, @data
+MOV ds, ax
+LEA dx, msg
+MOV ah, 09h
 INT 21h
-HLT`
+MOV ah, 4Ch
+INT 21h
+END main`
   },
   {
     id: "memory-vars",
@@ -225,14 +327,21 @@ HLT`
     difficulty: "Beginner",
     concepts: ["DB", "DW", "variables"],
     explanation: "Reads and writes named data values.",
-    source: `.data
+    source: `.model small
+.stack 100h
+.data
 score db 42
 total dw ?
 .code
-MOV AL, score
-ADD AL, 1
-MOV total, AX
-HLT`
+main:
+MOV ax, @data
+MOV ds, ax
+MOV al, score
+ADD al, 1
+MOV ah, 0
+MOV total, ax
+HLT
+END main`
   },
   {
     id: "flags-demo",
@@ -240,10 +349,19 @@ HLT`
     difficulty: "Beginner",
     concepts: ["ZF", "CF", "SF", "OF", "PF", "AF"],
     explanation: "Subtracts equal values to turn on ZF.",
-    source: `ORG 100h
-MOV AX, 1
-SUB AX, 1
-HLT`
+    source: `.model small
+.stack 100h
+.data
+leftValue dw 1
+rightValue dw 1
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV ax, leftValue
+SUB ax, rightValue
+HLT
+END main`
   },
   {
     id: "high-low",
@@ -251,10 +369,18 @@ HLT`
     difficulty: "Beginner",
     concepts: ["AX", "AH", "AL"],
     explanation: "Shows how AH and AL map onto AX.",
-    source: `ORG 100h
-MOV AX, 1234h
-MOV AL, 56h
-MOV AH, 78h
-HLT`
+    source: `.model small
+.stack 100h
+.data
+wordValue dw 1234h
+.code
+main:
+MOV ax, @data
+MOV ds, ax
+MOV ax, wordValue
+MOV al, 56h
+MOV ah, 78h
+HLT
+END main`
   }
 ];
