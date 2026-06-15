@@ -7,9 +7,10 @@ type RoughBorderProps = {
   strokeWidth?: number;
   roughness?: number;
   inset?: number;
+  redrawKey?: string | number;
 };
 
-export function RoughBorder({ className = "", stroke, strokeWidth = 2, roughness = 1.65, inset = 3 }: RoughBorderProps) {
+export function RoughBorder({ className = "", stroke, strokeWidth = 2, roughness = 1.65, inset = 3, redrawKey }: RoughBorderProps) {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const lastSize = useRef({ width: 0, height: 0 });
 
@@ -54,7 +55,7 @@ export function RoughBorder({ className = "", stroke, strokeWidth = 2, roughness
       resizeObserver.disconnect();
       themeObserver.disconnect();
     };
-  }, [inset, roughness, stroke, strokeWidth]);
+  }, [inset, redrawKey, roughness, stroke, strokeWidth]);
 
   return <canvas aria-hidden="true" className={`roughBorder ${className}`} ref={ref} />;
 }

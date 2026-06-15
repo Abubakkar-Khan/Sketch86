@@ -24,6 +24,23 @@ export function CodeEditor({ source, diagnostics, currentInstruction, executedLi
     monacoApi.editor.setTheme(theme === "dark" ? "sketch86-dark" : "sketch86-light");
     const model = editor.getModel();
     if (model) applyMarkers(monacoApi, model, diagnostics);
+
+    const root = editor.getDomNode();
+    const handleWheel = (event: WheelEvent) => {
+      if (!event.deltaY) return;
+      const layoutHeight = editor.getLayoutInfo().height;
+      const maxScrollTop = Math.max(0, editor.getScrollHeight() - layoutHeight);
+      const scrollTop = editor.getScrollTop();
+      const atTop = scrollTop <= 0;
+      const atBottom = scrollTop >= maxScrollTop - 1;
+      if ((event.deltaY < 0 && atTop) || (event.deltaY > 0 && atBottom)) {
+        event.preventDefault();
+        window.scrollBy({ top: event.deltaY, behavior: "auto" });
+      }
+    };
+
+    root?.addEventListener("wheel", handleWheel, { passive: false });
+    editor.onDidDispose(() => root?.removeEventListener("wheel", handleWheel));
   };
 
   useEffect(() => {

@@ -48,6 +48,7 @@ function initialState(cpu?: CPU8086): ExecutionState {
 
 export default function App() {
   const [source, setSource] = useState(examples[8].source);
+  const [sourceRevision, setSourceRevision] = useState(0);
   const [activeTab, setActiveTab] = useState<AppTab>("lab");
   const assembled = useMemo(() => assemble(source), [source]);
   const cpuRef = useRef<CPU8086 | undefined>();
@@ -131,9 +132,15 @@ export default function App() {
     }
   };
 
+  const updateSource = (nextSource: string) => {
+    setSource(nextSource);
+    setSourceRevision((revision) => revision + 1);
+  };
+
   const loadExample = (id: string) => {
     const example = examples.find((item) => item.id === id) ?? examples[0];
     setSource(example.source);
+    setSourceRevision((revision) => revision + 1);
     setTerminalInput("");
     setActiveTab("lab");
   };
@@ -205,7 +212,7 @@ export default function App() {
 
       {activeTab === "lab" && (
         <main className="labGrid">
-          <RoughPanel className="editorPanel">
+          <RoughPanel className="editorPanel" redrawKey={sourceRevision}>
             <div className="panelHeader">
               <h2>Code Editor</h2>
               <span>Monaco diagnostics</span>
@@ -215,7 +222,7 @@ export default function App() {
               diagnostics={assembled.diagnostics}
               currentInstruction={currentInstruction}
               executedLineNumber={lastTrace?.lineNumber}
-              onChange={setSource}
+              onChange={updateSource}
               theme={theme}
             />
           </RoughPanel>
