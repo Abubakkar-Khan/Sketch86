@@ -439,11 +439,11 @@ h1 {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(4, minmax(86px, 1fr));
+  grid-template-columns: repeat(3, minmax(98px, 1fr));
   gap: 8px;
   height: calc(100% - 46px);
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
   padding: 12px 14px 14px;
 }
 
@@ -462,6 +462,9 @@ h1 {
 
 .registerCard,
 .flagCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   min-height: 58px;
   padding: 8px 10px;
   border-radius: 7px;
@@ -470,9 +473,6 @@ h1 {
 }
 
 .flagCard {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   min-height: 50px;
   padding: 7px 10px;
 }
@@ -871,7 +871,7 @@ h1 {
   }
 
   .registerGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     overflow: auto;
   }
 
